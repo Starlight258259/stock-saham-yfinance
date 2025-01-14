@@ -8,23 +8,6 @@ import numpy as np
 if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
 
-# Fungsi Login
-def login():
-    st.title("Login")
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
-    if st.button("Login"):
-        if username == "admin" and password == "123":
-            st.session_state["authenticated"] = True
-            st.success("Login berhasil!")
-        else:
-            st.error("Username atau password salah.")
-
-# Fungsi Logout
-def logout():
-    st.session_state["authenticated"] = False
-    st.info("Anda telah logout.")
-
 # Aplikasi Utama
 if not st.session_state["authenticated"]:
     login()
