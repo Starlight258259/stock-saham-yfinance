@@ -35,7 +35,7 @@ else:
     if st.sidebar.button("Logout"):
         logout()
     
-    st.title("Grafik Candlestick Saham Interaktif")
+    st.title("Bapak Mangde Candlestick Saham Interaktif")
 
     # Input pengguna untuk simbol ticker dan rentang tanggal
     ticker = st.text_input("Masukkan Ticker Saham (contoh: AAPL)", "AAPL").upper()
