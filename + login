@@ -1,0 +1,83 @@
+import streamlit as st
+import yfinance as yf
+import plotly.graph_objects as go
+import pandas as pd
+
+# Inisialisasi session state untuk login
+if "authenticated" not in st.session_state:
+    st.session_state["authenticated"] = False
+
+# Halaman Login
+def login():
+    st.title("Login untuk Mengakses Aplikasi")
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
+    login_button = st.button("Login")
+    
+    # Logika autentikasi sederhana
+    if login_button:
+        if username == "admin" and password == "password":  # Ganti dengan kredensial yang diinginkan
+            st.session_state["authenticated"] = True
+            st.success("Login berhasil!")
+        else:
+            st.error("Username atau password salah")
+
+# Fungsi Logout
+def logout():
+    st.session_state["authenticated"] = False
+    st.info("Anda telah logout.")
+
+# Aplikasi Utama
+if not st.session_state["authenticated"]:
+    login()
+else:
+    # Tombol Logout
+    if st.sidebar.button("Logout"):
+        logout()
+    
+    st.title("Grafik Candlestick Saham Interaktif")
+
+    # Input pengguna untuk simbol ticker dan rentang tanggal
+    ticker = st.text_input("Masukkan Ticker Saham (contoh: AAPL)", "AAPL").upper()
+    start_date = st.date_input("Tanggal Mulai", value=pd.to_datetime("2006-01-01"))
+    end_date = st.date_input("Tanggal Akhir", value=pd.to_datetime("today"))
+
+    try:
+        # Ambil data menggunakan yfinance
+        data = yf.download(ticker, start=start_date, end=end_date)
+
+        if data.empty:
+            st.warning(f"Tidak ada data untuk ticker {ticker} dalam rentang tanggal yang dipilih.")
+        else:
+            # Buat grafik candlestick menggunakan Plotly
+            fig = go.Figure(data=[go.Candlestick(x=data.index,
+                                                 open=data['Open'],
+                                                 high=data['High'],
+                                                 low=data['Low'],
+                                                 close=data['Close'])])
+
+            # Sesuaikan tata letak
+            fig.update_layout(title=f"Harga Saham {ticker}",
+                              xaxis_title="Tanggal",
+                              yaxis_title="Harga",
+                              xaxis_rangeslider_visible=False)  # Sembunyikan range slider untuk tampilan lebih bersih
+
+            # Tambahkan rata-rata bergerak (opsional)
+            ma_days = st.slider("Periode Rata-Rata Bergerak", 5, 200, 20)  # Slider untuk periode MA
+            data[f'MA{ma_days}'] = data['Close'].rolling(window=ma_days).mean()
+            fig.add_trace(go.Scatter(x=data.index, y=data[f'MA{ma_days}'], mode='lines', name=f'MA {ma_days}'))
+
+            # Batang volume (opsional)
+            show_volume = st.checkbox("Tampilkan Volume", value=False)
+            if show_volume:
+                fig.add_trace(go.Bar(x=data.index, y=data['Volume'], name='Volume', yaxis='y2'))
+                fig.update_layout(yaxis2=dict(title='Volume', overlaying='y', side='right'))  # Konfigurasi sumbu Y kedua
+
+            st.plotly_chart(fig)
+
+            # Tampilkan data dalam tabel (opsional)
+            if st.checkbox("Tampilkan Tabel Data"):
+                st.dataframe(data)
+
+    except Exception as e:
+        st.error(f"Terjadi kesalahan: {e}. Silakan periksa simbol ticker dan rentang tanggal.")
