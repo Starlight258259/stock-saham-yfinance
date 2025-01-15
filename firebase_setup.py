@@ -1,11 +1,11 @@
 import firebase_admin
 from firebase_admin import credentials, firestore
 
-# Path ke file kredensial Firebase JSON
-cred = credentials.Certificate('path/to/your/firebase-credentials.json')
+# Menentukan path relatif ke file kredensial
+cred = credentials.Certificate('./firebase-credentials.json')  # Pastikan path relatif sesuai dengan lokasi file kredensial
 
-# Inisialisasi Firebase
+# Menginisialisasi Firebase
 firebase_admin.initialize_app(cred)
 
-# Inisialisasi Firestore
+# Mendapatkan referensi ke Firestore
 db = firestore.client()
